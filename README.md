@@ -469,3 +469,146 @@ o Vagrant poderá solicitar que o usuário escolha qual interface de rede dever�
 Está configuração de rede pública é útil quando precisamos que a máquina virtual seja acessível por outros dispositivos conectados à mesma rede. 
 
 Por exemplo, computadores conectados ao mesmo roteador podem conseguir se comunicar com a máquina virtual, dependendo das configurações de rede e firewall.
+
+## 12. Provisionamento
+
+Provisionamento é o processo de configurar automaticamente o ambiente dentro da máquina virtual assim que ela é criada, sem precisar entrar na VM e fazer tudo manualmente.
+
+O provisionamento é feito a partir dos **Provisioners**. Eles garantem a instalação automática, alterações de configuração e outras atividades na VM como parte do processo `vagrant up`. O Vagrant fornece várias opções para provisionamento, de shell script até configurações avançadas:
+
+- **Shell**: Executa scripts shell (bash) diretamente na VM. É o mais simples e direto.
+- **Ansible**: Usa playbooks Ansible para configurar a máquina (executado a partir do host).
+- **Puppet**: Usa manifests Puppet.
+- **Docker**: Provisiona containers Docker dentro da VM.
+- **File**: Copia arquivos do host para dentro da VM.
+
+### Provisionando um ambiente Node.js usando shell scripting
+
+#### 1. Estrutura de pasta
+
+Crie a estrutura de pasta a seguir:
+
+
+```markdown
+projeto-node/
+├── Vagrantfile
+└── provision.sh
+```
+
+#### 2. Vagrantfile
+
+Crie o arquivo **Vagrantfile** com o conteúdo a seguir:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "dev-node"
+
+  # Encaminha a porta padrão usada por muitos servidores Node (ex: Express)
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
+
+  # Recursos da VM (1GB de RAM e 1 CPU)
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Provisionamento via script externo (provision.sh)
+  config.vm.provision "shell", path: "provision.sh"
+end
+```
+
+#### 3. Shell scripting
+
+Crie o arquivo **provision.sh** e adicione o conteúdo a seguir:
+
+```bash
+#!/bin/bash
+
+echo ">> Atualizando pacotes..."
+apt-get update
+
+echo ">> Instalando Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+apt-get install -y nodejs
+
+echo ">> Verificando instalação..."
+node -v
+npm -v
+
+echo ">> Provisionamento concluído!"
+```
+
+#### 4. Testando o provisionamento
+
+Suba a máquina virtual:
+
+```bash
+vagrant up
+```
+
+Acesse a VM via SSH:
+
+```bash
+vagrant ssh
+```
+
+Confirme que o Node.js está instalado:
+
+```bash
+node -v
+```
+
+## 13. Principais Comandos
+
+| Comando | Descrição |
+|---|---|
+| `vagrant --version` | Mostra a versão do Vagrant instalada. |
+| `vagrant help` | Lista todos os comandos disponíveis. |
+| `vagrant help <comando>` | Mostra informações detalhadas sobre um comando específico. |
+| `vagrant init` | Cria um novo **Vagrantfile** no diretório atual. |
+| `vagrant up` | Cria e inicia a máquina virtual (VM). Se for executada pela primeira vez, baixa a box e roda o provisionamento automaticamente. |
+| `vagrant ssh` | Conecta ao terminal da VM via SSH. |
+| `vagrant status` | Mostra o status atual da VM. |
+| `vagrant global-status` | Mostra todas as VMs gerenciadas pelo Vagrant no computador. |
+| `vagrant halt` | Desliga a VM mantendo o disco e as configurações salvas. |
+| `vagrant reload` | Reinicia a VM aplicando as alterações feitas no **Vagrantfile** sem precisar destruir e recriar a máquina. |
+| `vagrant suspend` | Pausa a VM salvando o estado atual de memória em disco. |
+| `vagrant resume` | Retoma a VM que estava suspensa (`vagrant suspend`). |
+| `vagrant destroy` | Remove completamente a VM, liberando todos os recursos usados por ela. |
+| `vagrant provision` | Reexecuta os scripts e ferramentas de provisionamento informados no **Vagrantfile** em uma VM já criada e executando. |
+| `vagrant box list` | Lista todas as boxes já baixadas no computador. |
+| `vagrant box add <nome>` | Baixa e adiciona uma nova box ao sistema sem criar a VM com ela ainda. |
+| `vagrant box remove <nome>` | Remove uma box baixada liberando espaço em disco. |
+| `vagrant box update` | Verifica e baixa atualizações disponíveis para a box usada no projeto atual. |
+| `vagrant validate` | Verifica se o **Vagrantfile** está sintaticamente correto sem precisar subir a VM. |
+
+## 14. Encerrando e Removendo a Máquina
+
+Utilizando como base a VM configurada com Node.js que criamos na [seção 12](#12-provisionamento), vamos encerrar e remover a máquina, usando os seguintes comandos: `exit`, `vagrant halt` e `vagrant destroy`.
+
+### Saindo do Terminal da VM
+
+Para sair do terminal da VM e voltar ao do computador host:
+
+```bash
+exit
+```
+
+### Encerrando a VM
+
+Para encerrar a VM (nesta etapa, o disco, o Node.js e as configurações ainda continuam):
+
+```bash
+vagrant halt
+```
+
+### Removendo a VM
+
+Para remover a VM:
+
+```bash
+vagrant destroy
+```
+
+O Vagrant vai pedir confirmação, então digite `y` e aperte Enter para confirmar. Depois do destroy, o disco virtual da VM é apagado, além da sua configuração de rede específica. O **Vagrantfile** e o script provision.sh continuam existindo na pasta do projeto.
