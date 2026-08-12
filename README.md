@@ -557,3 +557,27 @@ Confirme que o Node.js está instalado:
 ```bash
 node -v
 ```
+
+## 13. Principais Comandos
+
+| Comando | Descrição |
+|---|---|
+| `vagrant --version` | Mostra a versão do Vagrant instalada. |
+| `vagrant help` | Lista todos os comandos disponíveis. |
+| `vagrant help <comando>` | Mostra informações detalhadas sobre um comando específico. |
+| `vagrant init` | Cria um novo **Vagrantfile** no diretório atual. |
+| `vagrant up` | Cria e inicia a máquina virtual (VM). Se for executada pela primeira vez, baixa a box e roda o provisionamento automaticamente. |
+| `vagrant ssh` | Conecta ao terminal da VM via SSH. |
+| `vagrant status` | Mostra o status atual da VM. |
+| `vagrant global-status` | Mostra todas as VMs gerenciadas pelo Vagrant no computador. |
+| `vagrant halt` | Desliga a VM mantendo o disco e as configurações salvas. |
+| `vagrant reload` | Reinicia a VM aplicando as alterações feitas no **Vagrantfile** sem precisar destruir e recriar a máquina. |
+| `vagrant suspend` | Pausa a VM salvando o estado atual de memória em disco. |
+| `vagrant resume` | Retoma a VM que estava suspensa (`vagrant suspend`). |
+| `vagrant destroy` | Remove completamente a VM, liberando todos os recursos usados por ela. |
+| `vagrant provision` | Reexecuta os scripts e ferramentas de provisionamento informados no **Vagrantfile** em uma VM já criada e executando. |
+| `vagrant box list` | Lista todas as boxes já baixadas no computador. |
+| `vagrant box add <nome>` | Baixa e adiciona uma nova box ao sistema sem criar a VM com ela ainda. |
+| `vagrant box remove <nome>` | Remove uma box baixada liberando espaço em disco. |
+| `vagrant box update` | Verifica e baixa atualizações disponíveis para a box usada no projeto atual. |
+| `vagrant validate` | Verifica se o **Vagrantfile** está sintaticamente correto sem precisar subir a VM. |
