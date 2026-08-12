@@ -581,3 +581,33 @@ node -v
 | `vagrant box remove <nome>` | Remove uma box baixada liberando espaço em disco. |
 | `vagrant box update` | Verifica e baixa atualizações disponíveis para a box usada no projeto atual. |
 | `vagrant validate` | Verifica se o **Vagrantfile** está sintaticamente correto sem precisar subir a VM. |
+
+## 14. Encerrando e Removendo a Máquina
+
+Utilizando como base a VM configurada com Node.js que criamos na [seção 12](#12-provisionamento), vamos encerrar e remover a máquina, usando os seguintes comandos: `exit`, `vagrant halt` e `vagrant destroy`.
+
+### Saindo do Terminal da VM
+
+Para sair do terminal da VM e voltar ao do computador host:
+
+```bash
+exit
+```
+
+### Encerrando a VM
+
+Para encerrar a VM (nesta etapa, o disco, o Node.js e as configurações ainda continuam):
+
+```bash
+vagrant halt
+```
+
+### Removendo a VM
+
+Para remover a VM:
+
+```bash
+vagrant destroy
+```
+
+O Vagrant vai pedir confirmação, então digite `y` e aperte Enter para confirmar. Depois do destroy, o disco virtual da VM é apagado, além da sua configuração de rede específica. O **Vagrantfile** e o script provision.sh continuam existindo na pasta do projeto.
