@@ -12,8 +12,8 @@ Este repositório apresenta um guia prático para instalação, configuração e
 4. [Instalação](#4-instalação)
 5. [Verificando a instalação](#5-verificando-a-instalação)
 6. [Criando o primeiro projeto](#6-criando-o-primeiro-projeto)
-7. Entendendo o Vagrantfile
-8. Criando a máquina virtual
+7. [Entendendo o Vagrantfile](#7-entendendo-o-vagrantfile)
+8. [Criando a máquina virtual](#8-criando-a-máquina-virtual)
 9. [Acessando a máquina virtual](#9-acessando-a-máquina-virtual)
 10. [Compartilhamento de arquivos](#10-compartilhamento-de-arquivos)
 11. [Configuração de rede](#11-configuração-de-rede)
@@ -265,14 +265,6 @@ meu-primeiro-vagrant/
 
 Agora, o Vagrantfile pode ser configurado para utilizar uma box como sistema base da máquina virtual.
 
-```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
-end
-```
-
-Nesse exemplo, a box ubuntu/jammy64 vai ser utilizada como base para a máquina virtual.
-
 Depois de configurar o Vagrantfile, a máquina pode ser criada e iniciada utilizando o comando:
 
 ```bash
@@ -298,9 +290,9 @@ end
 
 A instrução Vagrant.configure("2") inicia o bloco de configuração do Vagrant. O objeto config é utilizado para definir as configurações da máquina virtual.
 
-Nesse exemplo, config.vm.box define a box que será utilizada como base para criar a máquina virtual.
+config.vm.box define a box que será utilizada como base para criar a máquina virtual.
 
-As configurações definidas no Vagrantfile são lidas pelo Vagrant quando comandos como vagrant up são executados. A partir dessas configurações, o Vagrant utiliza o provider definido para criar e configurar a máquina virtual.
+As configurações do Vagrantfile são lidas pelo Vagrant quando comandos como vagrant up são executados. A partir delas, o Vagrant utiliza o provider definido para criar e configurar a máquina virtual.
 
 O Vagrantfile também pode conter diferentes configurações para o ambiente, permitindo definir características da máquina, rede, armazenamento e processos de provisionamento. Essas configurações serão apresentadas nos tópicos específicos deste guia.
 
@@ -324,7 +316,16 @@ Provider cria e configura a máquina virtual
 
 ## 8. Criando a máquina virtual
 
-A instalação das ferramentas será apresentada no próximo tópico.
+Com o Vagrantfile configurado, a máquina virtual pode ser criada e iniciada utilizando o comando:
+
+```bash
+vagrant up
+```
+Ao executar esse comando, o Vagrant lê as configurações definidas no Vagrantfile e utiliza o provider configurado para criar a máquina virtual.
+
+Caso a box especificada ainda não esteja disponível localmente, o Vagrant realiza o download da box antes de utilizá-la.
+
+Após a execução do comando, a máquina virtual estará em operação e poderá ser acessada utilizando o comando vagrant ssh, que será apresentado no próximo tópico.
 
 ## 9. Acessando a máquina virtual
 
