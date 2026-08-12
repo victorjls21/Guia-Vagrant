@@ -324,7 +324,6 @@ Provider cria e configura a máquina virtual
 
 ## 8. Criando a máquina virtual
 
-<<<<<<< HEAD
 A instalação das ferramentas será apresentada no próximo tópico.
 
 ## 9. Acessando a máquina virtual
@@ -469,5 +468,92 @@ o Vagrant poderá solicitar que o usuário escolha qual interface de rede dever�
 Está configuração de rede pública é útil quando precisamos que a máquina virtual seja acessível por outros dispositivos conectados à mesma rede. 
 
 Por exemplo, computadores conectados ao mesmo roteador podem conseguir se comunicar com a máquina virtual, dependendo das configurações de rede e firewall.
-=======
->>>>>>> upstream/main
+
+## 12. Provisionamento
+
+Provisionamento é o processo de configurar automaticamente o ambiente dentro da máquina virtual assim que ela é criada, sem precisar entrar na VM e fazer tudo manualmente.
+
+O provisionamento é feito a partir dos **Provisioners**. Eles garantem a instalação automática, alterações de configuração e outras atividades na VM como parte do processo `vagrant up`. O Vagrant fornece várias opções para provisionamento, de shell script até configurações avançadas:
+
+- **Shell**: Executa scripts shell (bash) diretamente na VM. É o mais simples e direto.
+- **Ansible**: Usa playbooks Ansible para configurar a máquina (executado a partir do host).
+- **Puppet**: Usa manifests Puppet.
+- **Docker**: Provisiona containers Docker dentro da VM.
+- **File**: Copia arquivos do host para dentro da VM.
+
+### Provisionando um ambiente Node.js usando shell scripting
+
+#### 1. Estrutura de pasta
+
+Crie a estrutura de pasta a seguir:
+
+
+```markdown
+projeto-node/
+├── Vagrantfile
+└── provision.sh
+```
+
+#### 2. Vagrantfile
+
+Crie o arquivo **Vagrantfile** com o conteúdo a seguir:
+
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "dev-node"
+
+  # Encaminha a porta padrão usada por muitos servidores Node (ex: Express)
+  config.vm.network "forwarded_port", guest: 3000, host: 3000
+
+  # Recursos da VM (1GB de RAM e 1 CPU)
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Provisionamento via script externo (provision.sh)
+  config.vm.provision "shell", path: "provision.sh"
+end
+```
+
+#### 3. Shell scripting
+
+Crie o arquivo **provision.sh** e adicione o conteúdo a seguir:
+
+```bash
+#!/bin/bash
+
+echo ">> Atualizando pacotes..."
+apt-get update
+
+echo ">> Instalando Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+apt-get install -y nodejs
+
+echo ">> Verificando instalação..."
+node -v
+npm -v
+
+echo ">> Provisionamento concluído!"
+```
+
+#### 4. Testando o provisionamento
+
+Suba a máquina virtual:
+
+```bash
+vagrant up
+```
+
+Acesse a VM via SSH:
+
+```bash
+vagrant ssh
+```
+
+Confirme que o Node.js está instalado:
+
+```bash
+node -v
+```
