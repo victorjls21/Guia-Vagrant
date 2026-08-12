@@ -20,7 +20,7 @@ Este repositório apresenta um guia prático para instalação, configuração e
 12. Provisionamento
 13. Principais comandos
 14. Encerrando e removendo a máquina
-15. Exemplos práticos
+15. [Exemplos práticos](#15-Exemplos-práticos)
 16. Problemas comuns
 17. Referências
 
@@ -232,3 +232,125 @@ O termo 'VBoxManage' não é reconhecido...
 o programa pode ainda não estar instalado ou seu executável pode não estar disponível no `PATH` do sistema.
 
 A instalação das ferramentas será apresentada no próximo tópico.
+
+## 15. Exemplos práticos
+
+Esta seção reúne exemplos completos de Vagrantfiles para cenários comuns do dia a dia. Cada exemplo pode ser copiado para uma pasta vazia e executado com `vagrant up`.
+
+### 15.1 Servidor web com Apache
+
+Este exemplo cria uma máquina Ubuntu, instala o Apache automaticamente e redireciona a porta `80` da VM para a porta `8080` do computador.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  # Define a box que será utilizada
+  config.vm.box = "ubuntu/jammy64"
+
+  # Define o nome da máquina
+  config.vm.hostname = "servidor-web"
+
+  # Encaminha a porta 80 da VM para a porta 8080 do computador
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Configura os recursos da máquina virtual
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Instala o Apache automaticamente
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y apache2
+  SHELL
+
+end
+```
+
+Após `vagrant up`, o resultado pode ser conferido em `http://localhost:8080`.
+
+> Esse é o mesmo modelo utilizado no exemplo prático deste repositório, disponível em [`exemplos/exemplo_de_victor`](../exemplos/exemplo_de_victor).
+
+### 15.2 Servidor com pasta compartilhada personalizada
+
+Este exemplo mostra como sincronizar uma pasta específica do computador com uma pasta da máquina virtual, além da sincronização padrão.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "servidor-arquivos"
+
+  # Compartilha a pasta "site" do host com "/var/www/html" na VM
+  config.vm.synced_folder "./site", "/var/www/html"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+end
+```
+
+Isso é útil quando se deseja editar arquivos no computador (por exemplo, em um editor de código) e ver as mudanças refletidas imediatamente dentro da máquina virtual.
+
+### 15.3 Ambiente com múltiplas máquinas virtuais
+
+O Vagrant também permite descrever mais de uma máquina no mesmo Vagrantfile, o que é útil para simular, por exemplo, um servidor de aplicação e um servidor de banco de dados.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  # Máquina 1: servidor web
+  config.vm.define "web" do |web|
+    web.vm.box = "ubuntu/jammy64"
+    web.vm.hostname = "web"
+    web.vm.network "forwarded_port", guest: 80, host: 8080
+    web.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+    end
+  end
+
+  # Máquina 2: banco de dados
+  config.vm.define "db" do |db|
+    db.vm.box = "ubuntu/jammy64"
+    db.vm.hostname = "db"
+    db.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+    end
+  end
+
+end
+```
+
+Com essa configuração, comandos como `vagrant up`, `vagrant ssh` e `vagrant halt` podem ser direcionados a uma máquina específica, informando seu nome:
+
+```bash
+vagrant ssh web
+vagrant halt db
+```
+
+### 15.4 Rede privada entre host e máquina virtual
+
+Este exemplo cria uma rede privada, atribuindo um IP fixo à máquina virtual, o que facilita o acesso direto sem depender de redirecionamento de portas.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "servidor-privado"
+
+  # Cria uma rede privada com IP fixo
+  config.vm.network "private_network", ip: "192.168.56.10"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+  end
+
+end
+```
+
+Após `vagrant up`, a máquina pode ser acessada diretamente pelo endereço `192.168.56.10`.
+
+---
