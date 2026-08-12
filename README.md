@@ -21,7 +21,7 @@ Este repositório apresenta um guia prático para instalação, configuração e
 13. Principais comandos
 14. Encerrando e removendo a máquina
 15. [Exemplos práticos](#15-Exemplos-práticos)
-16. Problemas comuns
+16. [Problemas comuns](#16-Problemas-comuns)
 17. Referências
 
 ---
@@ -352,5 +352,84 @@ end
 ```
 
 Após `vagrant up`, a máquina pode ser acessada diretamente pelo endereço `192.168.56.10`.
+
+---
+
+## 16. Problemas comuns
+
+Esta seção reúne os erros mais frequentes ao utilizar o Vagrant com o VirtualBox, com base em relatos da comunidade e na documentação oficial, além de sugestões de solução.
+
+### 16.1 "VT-x is disabled in the BIOS for all CPU modes"
+
+Esse é um dos erros mais comuns ao rodar `vagrant up` pela primeira vez. Ele indica que a virtualização de hardware (Intel VT-x ou AMD-V) não está habilitada no computador.
+
+**Como resolver:**
+
+- Reinicie o computador e acesse a BIOS/UEFI (geralmente pressionando `Del`, `F2` ou `F10` durante a inicialização);
+- Localize a opção de virtualização (pode aparecer como **Intel VT-x**, **AMD-V**, **SVM Mode** ou **Virtualization Technology**) e habilite-a;
+- Em computadores com Windows, verifique também se o **Hyper-V** está desativado, pois ele pode conflitar com o VirtualBox;
+- Salve as alterações, reinicie e tente `vagrant up` novamente.
+
+### 16.2 "Vagrant cannot forward the specified ports on this VM"
+
+Esse erro ocorre quando a porta configurada no `forwarded_port` já está sendo usada por outro programa no computador (por exemplo, outro servidor local rodando na porta 8080).
+
+**Como resolver:**
+
+- Feche o programa que está utilizando a porta em conflito; ou
+- Altere a porta do host no Vagrantfile, por exemplo:
+
+```ruby
+config.vm.network "forwarded_port", guest: 80, host: 8081
+```
+
+- Depois de alterar, rode:
+
+```bash
+vagrant reload
+```
+
+### 16.3 Falha ao montar pastas compartilhadas (Guest Additions)
+
+Ao usar `vagrant up`, pode aparecer uma mensagem informando que não foi possível montar a pasta compartilhada porque o sistema `vboxsf` não está disponível. Isso geralmente acontece quando a box utilizada não possui as **VirtualBox Guest Additions** instaladas ou atualizadas.
+
+**Como resolver:**
+
+- Verifique se o plugin `vagrant-vbguest` está instalado, o que ajuda a manter as Guest Additions sincronizadas com a versão do VirtualBox:
+
+```bash
+vagrant plugin install vagrant-vbguest
+```
+
+- Depois, rode:
+
+```bash
+vagrant reload
+```
+
+### 16.4 Comando `vagrant` não reconhecido
+
+Se o terminal retornar uma mensagem como `O termo 'vagrant' não é reconhecido...`, o programa pode não estar instalado corretamente ou seu executável não está no `PATH` do sistema.
+
+**Como resolver:**
+
+- Confirme se o Vagrant foi realmente instalado, reabrindo o instalador se necessário;
+- Feche e abra novamente o terminal (o `PATH` só é atualizado em novas sessões);
+- Em último caso, reinicie o computador.
+
+### 16.5 A máquina demora muito ou trava ao iniciar
+
+Quando `vagrant up` fica travado por muito tempo, principalmente na etapa de conexão SSH, geralmente o problema está relacionado à virtualização de hardware desabilitada (ver item 16.1) ou a recursos insuficientes (memória/CPU) alocados à máquina virtual.
+
+**Como resolver:**
+
+- Reduza a quantidade de memória ou CPUs configurada no `Vagrantfile`, caso o computador tenha poucos recursos disponíveis;
+- Verifique no Gerenciador de Tarefas se há memória RAM livre suficiente;
+- Em caso de falha persistente, destrua e recrie a máquina:
+
+```bash
+vagrant destroy
+vagrant up
+```
 
 ---
