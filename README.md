@@ -433,3 +433,17 @@ vagrant up
 ```
 
 ---
+
+## 17. Referências
+
+- HashiCorp. **Vagrant Documentation**. Disponível em: <https://developer.hashicorp.com/vagrant/docs>.
+- HashiCorp. **Introduction to Vagrant**. Disponível em: <https://developer.hashicorp.com/vagrant/intro>.
+- HashiCorp. **Vagrantfile**. Disponível em: <https://developer.hashicorp.com/vagrant/docs/vagrantfile>.
+- HashiCorp. **Vagrant Command-Line Interface**. Disponível em: <https://developer.hashicorp.com/vagrant/docs/cli>.
+- HashiCorp. **Install Vagrant**. Disponível em: <https://developer.hashicorp.com/vagrant/install>.
+- HashiCorp. **Get Started Tutorials**. Disponível em: <https://developer.hashicorp.com/vagrant/tutorials>.
+- HashiCorp Vagrant Registry (Vagrant Cloud). **Vagrant Boxes**. Disponível em: <https://portal.cloud.hashicorp.com/vagrant/discover>.
+- Oracle. **VirtualBox User Manual**. Disponível em: <https://www.virtualbox.org/manual/>.
+- HashiCorp. **hashicorp/vagrant — repositório oficial no GitHub**. Disponível em: <https://github.com/hashicorp/vagrant>.
+
+---
