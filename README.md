@@ -17,12 +17,12 @@ Este repositório apresenta um guia prático para instalação, configuração e
 9. [Acessando a máquina virtual](#9-acessando-a-máquina-virtual)
 10. [Compartilhamento de arquivos](#10-compartilhamento-de-arquivos)
 11. [Configuração de rede](#11-configuração-de-rede)
-12. Provisionamento
-13. Principais comandos
-14. Encerrando e removendo a máquina
-15. Exemplos práticos
-16. Problemas comuns
-17. Referências
+12. [Provisionamento](#12-provisionamento)
+13. [Principais comandos](#13-principais-comandos)
+14. [Encerrando e removendo a máquina](#14-encerrando-e-removendo-a-máquina)
+15. [Exemplos práticos](#15-Exemplos-práticos)
+16. [Problemas comuns](#16-Problemas-comuns)
+17. [Referências](#17-referências)
 
 ---
 
@@ -612,3 +612,218 @@ vagrant destroy
 ```
 
 O Vagrant vai pedir confirmação, então digite `y` e aperte Enter para confirmar. Depois do destroy, o disco virtual da VM é apagado, além da sua configuração de rede específica. O **Vagrantfile** e o script provision.sh continuam existindo na pasta do projeto.
+
+## 15. Exemplos práticos
+
+Esta seção reúne exemplos completos de Vagrantfiles para cenários comuns do dia a dia. Cada exemplo pode ser copiado para uma pasta vazia e executado com `vagrant up`.
+
+### 15.1 Servidor web com Apache
+
+Este exemplo cria uma máquina Ubuntu, instala o Apache automaticamente e redireciona a porta `80` da VM para a porta `8080` do computador.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  # Define a box que será utilizada
+  config.vm.box = "ubuntu/jammy64"
+
+  # Define o nome da máquina
+  config.vm.hostname = "servidor-web"
+
+  # Encaminha a porta 80 da VM para a porta 8080 do computador
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Configura os recursos da máquina virtual
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Instala o Apache automaticamente
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y apache2
+  SHELL
+
+end
+```
+
+Após `vagrant up`, o resultado pode ser conferido em `http://localhost:8080`.
+
+> Esse é o mesmo modelo utilizado no exemplo prático deste repositório, disponível em [`exemplos/exemplo_de_victor`](../exemplos/exemplo_de_victor).
+
+### 15.2 Servidor com pasta compartilhada personalizada
+
+Este exemplo mostra como sincronizar uma pasta específica do computador com uma pasta da máquina virtual, além da sincronização padrão.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "servidor-arquivos"
+
+  # Compartilha a pasta "site" do host com "/var/www/html" na VM
+  config.vm.synced_folder "./site", "/var/www/html"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+end
+```
+
+Isso é útil quando se deseja editar arquivos no computador (por exemplo, em um editor de código) e ver as mudanças refletidas imediatamente dentro da máquina virtual.
+
+### 15.3 Ambiente com múltiplas máquinas virtuais
+
+O Vagrant também permite descrever mais de uma máquina no mesmo Vagrantfile, o que é útil para simular, por exemplo, um servidor de aplicação e um servidor de banco de dados.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  # Máquina 1: servidor web
+  config.vm.define "web" do |web|
+    web.vm.box = "ubuntu/jammy64"
+    web.vm.hostname = "web"
+    web.vm.network "forwarded_port", guest: 80, host: 8080
+    web.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+    end
+  end
+
+  # Máquina 2: banco de dados
+  config.vm.define "db" do |db|
+    db.vm.box = "ubuntu/jammy64"
+    db.vm.hostname = "db"
+    db.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+    end
+  end
+
+end
+```
+
+Com essa configuração, comandos como `vagrant up`, `vagrant ssh` e `vagrant halt` podem ser direcionados a uma máquina específica, informando seu nome:
+
+```bash
+vagrant ssh web
+vagrant halt db
+```
+
+### 15.4 Rede privada entre host e máquina virtual
+
+Este exemplo cria uma rede privada, atribuindo um IP fixo à máquina virtual, o que facilita o acesso direto sem depender de redirecionamento de portas.
+
+```ruby
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "servidor-privado"
+
+  # Cria uma rede privada com IP fixo
+  config.vm.network "private_network", ip: "192.168.56.10"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+  end
+
+end
+```
+
+Após `vagrant up`, a máquina pode ser acessada diretamente pelo endereço `192.168.56.10`.
+
+---
+
+## 16. Problemas comuns
+
+Esta seção reúne os erros mais frequentes ao utilizar o Vagrant com o VirtualBox, com base em relatos da comunidade e na documentação oficial, além de sugestões de solução.
+
+### 16.1 "VT-x is disabled in the BIOS for all CPU modes"
+
+Esse é um dos erros mais comuns ao rodar `vagrant up` pela primeira vez. Ele indica que a virtualização de hardware (Intel VT-x ou AMD-V) não está habilitada no computador.
+
+**Como resolver:**
+
+- Reinicie o computador e acesse a BIOS/UEFI (geralmente pressionando `Del`, `F2` ou `F10` durante a inicialização);
+- Localize a opção de virtualização (pode aparecer como **Intel VT-x**, **AMD-V**, **SVM Mode** ou **Virtualization Technology**) e habilite-a;
+- Em computadores com Windows, verifique também se o **Hyper-V** está desativado, pois ele pode conflitar com o VirtualBox;
+- Salve as alterações, reinicie e tente `vagrant up` novamente.
+
+### 16.2 "Vagrant cannot forward the specified ports on this VM"
+
+Esse erro ocorre quando a porta configurada no `forwarded_port` já está sendo usada por outro programa no computador (por exemplo, outro servidor local rodando na porta 8080).
+
+**Como resolver:**
+
+- Feche o programa que está utilizando a porta em conflito; ou
+- Altere a porta do host no Vagrantfile, por exemplo:
+
+```ruby
+config.vm.network "forwarded_port", guest: 80, host: 8081
+```
+
+- Depois de alterar, rode:
+
+```bash
+vagrant reload
+```
+
+### 16.3 Falha ao montar pastas compartilhadas (Guest Additions)
+
+Ao usar `vagrant up`, pode aparecer uma mensagem informando que não foi possível montar a pasta compartilhada porque o sistema `vboxsf` não está disponível. Isso geralmente acontece quando a box utilizada não possui as **VirtualBox Guest Additions** instaladas ou atualizadas.
+
+**Como resolver:**
+
+- Verifique se o plugin `vagrant-vbguest` está instalado, o que ajuda a manter as Guest Additions sincronizadas com a versão do VirtualBox:
+
+```bash
+vagrant plugin install vagrant-vbguest
+```
+
+- Depois, rode:
+
+```bash
+vagrant reload
+```
+
+### 16.4 Comando `vagrant` não reconhecido
+
+Se o terminal retornar uma mensagem como `O termo 'vagrant' não é reconhecido...`, o programa pode não estar instalado corretamente ou seu executável não está no `PATH` do sistema.
+
+**Como resolver:**
+
+- Confirme se o Vagrant foi realmente instalado, reabrindo o instalador se necessário;
+- Feche e abra novamente o terminal (o `PATH` só é atualizado em novas sessões);
+- Em último caso, reinicie o computador.
+
+### 16.5 A máquina demora muito ou trava ao iniciar
+
+Quando `vagrant up` fica travado por muito tempo, principalmente na etapa de conexão SSH, geralmente o problema está relacionado à virtualização de hardware desabilitada (ver item 16.1) ou a recursos insuficientes (memória/CPU) alocados à máquina virtual.
+
+**Como resolver:**
+
+- Reduza a quantidade de memória ou CPUs configurada no `Vagrantfile`, caso o computador tenha poucos recursos disponíveis;
+- Verifique no Gerenciador de Tarefas se há memória RAM livre suficiente;
+- Em caso de falha persistente, destrua e recrie a máquina:
+
+```bash
+vagrant destroy
+vagrant up
+```
+
+---
+
+## 17. Referências
+
+- HashiCorp. **Vagrant Documentation**. Disponível em: <https://developer.hashicorp.com/vagrant/docs>.
+- HashiCorp. **Introduction to Vagrant**. Disponível em: <https://developer.hashicorp.com/vagrant/intro>.
+- HashiCorp. **Vagrantfile**. Disponível em: <https://developer.hashicorp.com/vagrant/docs/vagrantfile>.
+- HashiCorp. **Vagrant Command-Line Interface**. Disponível em: <https://developer.hashicorp.com/vagrant/docs/cli>.
+- HashiCorp. **Install Vagrant**. Disponível em: <https://developer.hashicorp.com/vagrant/install>.
+- HashiCorp. **Get Started Tutorials**. Disponível em: <https://developer.hashicorp.com/vagrant/tutorials>.
+- HashiCorp Vagrant Registry (Vagrant Cloud). **Vagrant Boxes**. Disponível em: <https://portal.cloud.hashicorp.com/vagrant/discover>.
+- Oracle. **VirtualBox User Manual**. Disponível em: <https://www.virtualbox.org/manual/>.
+- HashiCorp. **hashicorp/vagrant — repositório oficial no GitHub**. Disponível em: <https://github.com/hashicorp/vagrant>.
+
+---
