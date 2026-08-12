@@ -1,0 +1,29 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  config.vm.hostname = "web-nginx"
+
+  # Encaminha a porta 80 da VM para a porta 8080 do host
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Instala e habilita o servidor nginx
+  config.vm.provision "shell", inline: <<-SHELL
+    echo ">> Instalando o Nginx..."
+    yum install -y epel-release
+    yum install -y nginx
+
+    echo ">> Iniciando e habilitando o Nginx..."
+    systemctl start nginx
+    systemctl enable nginx
+
+    echo ">> Liberando porta 80 no firewall..."
+    firewall-cmd --permanent --add-service=http
+    firewall-cmd --reload
+
+    echo ">> Provisionamento concluído! Nginx rodando."
+  SHELL
+end
