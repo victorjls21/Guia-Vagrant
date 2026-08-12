@@ -14,9 +14,9 @@ Este repositório apresenta um guia prático para instalação, configuração e
 6. [Criando o primeiro projeto](#6-criando-o-primeiro-projeto)
 7. Entendendo o Vagrantfile
 8. Criando a máquina virtual
-9. Acessando a máquina virtual
-10. Compartilhamento de arquivos
-11. Configuração de rede
+9. [Acessando a máquina virtual](#9-acessando-a-máquina-virtual)
+10. [Compartilhamento de arquivos](#10-compartilhamento-de-arquivos)
+11. [Configuração de rede](#11-configuração-de-rede)
 12. Provisionamento
 13. Principais comandos
 14. Encerrando e removendo a máquina
@@ -324,3 +324,150 @@ Provider cria e configura a máquina virtual
 
 ## 8. Criando a máquina virtual
 
+<<<<<<< HEAD
+A instalação das ferramentas será apresentada no próximo tópico.
+
+## 9. Acessando a máquina virtual
+
+Após criar a máquina virtual com o comando `vagrant up`, o Vagrant permite acessar o terminal da máquina através do protocolo SSH, sem a necessidade de abrir a interface gráfica do VirtualBox ou outro virtualizador.
+
+### 9.1 Conectando via SSH
+
+Para o acesso da máquina virtual criada, abrimos o terminal do computador na pasta onde o Vagrantfile está localizado e executamos:
+
+```bash
+vagrant ssh
+```
+
+O Vagrant utilizará as chaves SSH geradas durante a inicialização para autenticar o acesso. Se a conexão for bem-sucedida, o prompt do terminal mudará indicando que você está dentro do Linux:
+
+```bash
+vagrant@<hostname>:~$
+```
+
+### 9.2 Encerrando sessão SSH
+
+Para sair do terminal da máquina virtual e retornar ao terminal do computador, realizamos o comando:
+
+```bash
+exit
+```
+
+## 10. Compartilhamento de arquivos
+
+O Vagrant possui um recurso nativo chamado Synced Folders (Pastas Sincronizadas). Que permite que arquivos criados ou modificados no seu computador host sejam refletidos instantaneamente dentro da máquina virtual e vice-versa.
+
+Por padrão, a pasta raiz do seu computador onde está o Vagrantfile é mapeada dentro da máquina virtual, normalmente no diretório: 
+
+```bash
+/vagrant
+```
+
+### 10.1 Acessando a pasta compartilhada
+
+Acesse na máquina virtual utilizando:
+
+```bash
+vagrant ssh
+```
+
+Depois, acesse o diretório compartilhado:
+
+```bash
+cd /vagrant
+```
+
+Visualize os arquivos presentes na pasta:
+
+```bash
+ls
+```
+
+### 10.2 Teste prático: Criando arquivo na VM
+
+Dentro da máquina virtual, acesse a pasta compartilhada:
+
+```bash
+cd /vagrant
+```
+
+Em seguida, crie um arquivo de teste:
+
+```bash
+echo "<Conteúdo>" > <nome_arquivo>.txt
+```
+
+Verifique se o arquivo foi criado:
+
+```bash
+ls
+```
+
+Verifique o conteúdo:
+
+```bash
+cat <nome_arquivo>.txt
+```
+
+### 10.3 Configurando uma pasta compartilhada
+
+Além da pasta `/vagrant`, também é possível configurar outras pastas compartilhadas no `Vagrantfile`.
+
+```bash
+config.vm.synced_folder "./pasta", "/home/vagrant/pasta"
+```
+
+- `./pasta` representa a pasta no computador host;
+- `/home/vagrant/pasta` representa o local onde ela será disponibilizada dentro da máquina virtual.
+
+## 11. Configuração de rede
+
+O Vagrant permite configurar diferentes tipos de rede para a máquina. Essa configuração determina como a máquina virtual poderá se comunicar com o computador host, outras máquinas virtuais e dispositivos presentes na rede.
+
+Os principais tipos de configuração de rede utilizados pelo Vagrant são:
+
+- NAT: permite que a máquina virtual acesse a internet utilizando a conexão do computador host.
+- Private Network: cria uma rede privada entre o computador host e a máquina virtual.
+- Public Network: conecta a máquina virtual à rede física utilizando o modo Bridge.
+
+### 11.1 Rede privada
+
+Com a rede privada é possível definir um endereço IP específico para a máquina virtual.
+
+Podemos usar no `Vagrantfile`:
+
+```bash
+config.vm.network "private_network", ip: "192.168.56.10"
+```
+
+Esse tipo de configuração é útil quando é necessário estabelecer uma comunicação entre o computador host e a máquina virtual utilizando um endereço IP específico, sem disponibilizar diretamente a máquina para toda a rede física. E caso exista um servidor web funcionando na máquina virtual, ele poderá ser acessado através do endereço:
+
+```bash
+192.168.56.10
+```
+
+### 11.2 Rede pública
+
+O Vagrant também pode conectar a máquina virtual diretamente à rede física utilizando o modo Bridge.
+
+Para isso, podemos utilizar:
+
+```bash
+config.vm.network "public_network"
+```
+
+Nesse modo, a máquina virtual funciona como um dispositivo conectado à mesma rede física do computador host.
+
+Durante o comando:
+
+```bash
+vagrant up
+```
+
+o Vagrant poderá solicitar que o usuário escolha qual interface de rede deverá ser utilizada.
+
+Está configuração de rede pública é útil quando precisamos que a máquina virtual seja acessível por outros dispositivos conectados à mesma rede. 
+
+Por exemplo, computadores conectados ao mesmo roteador podem conseguir se comunicar com a máquina virtual, dependendo das configurações de rede e firewall.
+=======
+>>>>>>> upstream/main
