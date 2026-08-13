@@ -1,0 +1,28 @@
+# Exemplo de Rafael Albuquerque - Vagrant + Ansible
+#
+# Objetivo: mostrar que o Vagrant não compete com ferramentas de
+# gerência de configuração — ele cria a infraestrutura base (a VM)
+# e delega a instalação/configuração do software para o Ansible.
+# Aqui o Ansible instala e configura o Docker Engine dentro da VM,
+# ilustrando também a "transição híbrida" (Vagrant preparando o host
+# Linux onde o Docker vai rodar).
+
+Vagrant.configure("2") do |config|
+
+  # Sistema operacional base
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "docker-host"
+
+  # Recursos da máquina virtual
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "VM_Grupo3_Rafael_Docker"
+    vb.memory = "2048"
+    vb.cpus = 2
+  end
+
+  # Provisionamento via Ansible (roda o playbook.yml na primeira "vagrant up")
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yml"
+  end
+
+end
